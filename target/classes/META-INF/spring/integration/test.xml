@@ -9,12 +9,27 @@
 						http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 						http://www.springframework.org/schema/integration/twitter http://www.springframework.org/schema/integration/twitter/spring-integration-twitter.xsd">
 
-
-<bean id="twitterTemplate” class="org.springframework.social.twitter.api.impl.TwitterTemplate”> 
-	<constructor-arg value="${twitter.oauth.consumerKey}" /> 
-	<constructor-arg value="${twitter.oauth.consumerSecret}" /> 
-	<constructor-arg value="${twitter.oauth.accessToken}" /> 
-	<constructor-arg value="${twitter.oauth.accessTokenSecret}" /> 
-</bean> 
+	<bean id="twitterTemplate"
+		class="org.springframework.social.twitter.api.impl.TwitterTemplate">
+		<constructor-arg value="${twitter.oauth.consumerKey}" />
+		<constructor-arg value="${twitter.oauth.consumerSecret}" />
+		<constructor-arg value="${twitter.oauth.accessToken}" />
+		<constructor-arg value="${twitter.oauth.accessTokenSecret}" />
+	</bean>
+	
+	<int-twitter:search-inbound-channel-adapter
+		id="searchAdapter" 
+		channel="sourceExtractor" 
+		query="${twitter.search.query}"
+		twitter-template="twitterTemplate">
+		<int:poller fixed-rate="3000" max-messages-per-poll="5" />
+	</int-twitter:search-inbound-channel-adapter>
+	
+	<int:transformer 
+		input-channel="sourceExtractor" 
+		output-channel="twitterOut" 
+		expression="payload.getText()"/>
+		
+	<int:logging-channel-adapter id="twitterOut" level="INFO"/>
 
 </beans>
